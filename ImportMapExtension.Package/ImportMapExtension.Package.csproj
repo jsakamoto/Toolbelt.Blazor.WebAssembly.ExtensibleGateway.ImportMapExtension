@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../VersionInfo.props" />
+
+  <PropertyGroup>
+    <!-- This project builds nothing of its own. It exists to gather the gateway extension and the
+         MSBuild task into one package. -->
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PackageId>Toolbelt.Blazor.WebAssembly.ExtensibleGateway.ImportMapExtension</PackageId>
+    <Version>$(ImportMapExtensionVersion)</Version>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <PackageTags>blazor;blazor-webassembly;blazorwebassembly;blazorwasm;gateway;importmap;csp;content-security-policy</PackageTags>
+    <PackageReleaseNotes>(Please write the package release notes in "../RELEASE-NOTES.txt")</PackageReleaseNotes>
+    <PackageOutputPath>../_dist/</PackageOutputPath>
+    <Description>In a standalone Blazor WebAssembly app, edit a collocated JavaScript module and just reload, with no rebuild, under a strict Content Security Policy.</Description>
+    <PackageIcon>nupkg-icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- NU5128: this package has no "lib" folder on purpose.
+         NU5100: the assemblies live in "tools" and "tasks", which is also on purpose. -->
+    <NoWarn>$(NoWarn);NU5128;NU5100</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../.assets/nupkg-icon.png" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="../README.md" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="../LICENSE" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="PackageContents/**/*" Pack="true" PackagePath="/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- The gateway loads the extension from "tools/net11.0", and the ".targets" file loads the task
+       from "tasks/<flavor>". Neither is a library that consumers compile against, so neither goes
+       into "lib". -->
+  <!-- Built with the MSBuild task rather than a ProjectReference. A reference would negotiate a
+       single compatible target framework with the task project and build only "net8.0", leaving the
+       "net472" flavor that Visual Studio needs out of the package. -->
+  <Target Name="BuildPackagedProjects" BeforeTargets="BundleAssemblies">
+    <ItemGroup>
+      <_ImportMapPackagedProject Include="../ImportMapExtension/ImportMapExtension.csproj" />
+      <_ImportMapPackagedProject Include="../ImportMapExtension.Tasks/ImportMapExtension.Tasks.csproj" />
+    </ItemGroup>
+    <!-- Restored in a call of its own. Packing this project restores only this project, and neither
+         of these is a reference of it. -->
+    <MSBuild Projects="@(_ImportMapPackagedProject)"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="TargetFramework" />
+    <MSBuild Projects="@(_ImportMapPackagedProject)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="TargetFramework" />
+  </Target>
+
+  <!-- Unlike the .NET 10 development server, this gateway loads an extension by the path its
+       ".targets" file hands over and probes that folder for anything the extension carries
+       privately, so no hand-written ".deps.json" goes into the package. -->
+  <Target Name="BundleAssemblies" BeforeTargets="GenerateNuspec;_GetPackageFiles">
+    <PropertyGroup>
+      <_ExtensionOutputDir>../ImportMapExtension/bin/$(Configuration)/net11.0/</_ExtensionOutputDir>
+      <_TasksOutputDir>../ImportMapExtension.Tasks/bin/$(Configuration)/</_TasksOutputDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <None Include="$(_ExtensionOutputDir)*.dll" Pack="true" PackagePath="/tools/net11.0" />
+      <None Include="$(_TasksOutputDir)net472/Toolbelt.Blazor.WebAssembly.ExtensibleGateway.ImportMapExtension.Tasks.dll" Pack="true" PackagePath="/tasks/net472" />
+      <None Include="$(_TasksOutputDir)net8.0/Toolbelt.Blazor.WebAssembly.ExtensibleGateway.ImportMapExtension.Tasks.dll" Pack="true" PackagePath="/tasks/net8.0" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
+    <ReadLinesFromFile File="../RELEASE-NOTES.txt">
+      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')%0av.0.0</PackageReleaseNotes>
+      <PackageReleaseNotes>$(PackageReleaseNotes.Replace('&lt;','&amp;lt;'))</PackageReleaseNotes>
+      <PackageReleaseNotes>$(PackageReleaseNotes.Replace('&gt;','&amp;gt;'))</PackageReleaseNotes>
+      <PackageReleaseNotes>$([System.Text.RegularExpressions.Regex]::Match($(PackageReleaseNotes), "^(v\.[\d\.\w\-]+.+?)v\.[\d\.]+", System.Text.RegularExpressions.RegexOptions.Singleline).Groups[1].Value)</PackageReleaseNotes>
+      <PackageReleaseNotes>$(PackageReleaseNotes)%0aTo see all the change logs, please visit the following URL.%0a- $(RepositoryUrl)/blob/main/RELEASE-NOTES.txt</PackageReleaseNotes>
+    </PropertyGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/README/">
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="RELEASE-NOTES.txt" />
+    <File Path="VersionInfo.props" />
+  </Folder>
+  <Project Path="ImportMapExtension.Package/ImportMapExtension.Package.csproj" />
+  <Project Path="ImportMapExtension.Shared/ImportMapExtension.Shared.shproj" Id="fbe1f007-81fa-4f6e-b139-0e0a91facf3d" />
+  <Project Path="ImportMapExtension.Tasks/ImportMapExtension.Tasks.csproj" />
+  <Project Path="ImportMapExtension.Test/ImportMapExtension.Test.csproj" />
+  <Project Path="ImportMapExtension/ImportMapExtension.csproj" />
+  <Project Path="SampleApp/SampleApp.csproj" />
+</Solution>
