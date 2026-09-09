@@ -5,6 +5,9 @@
 Edit a collocated JavaScript module of a standalone Blazor WebAssembly app and just reload the page.
 No rebuild. And run the whole thing under a strict Content Security Policy, with no `'unsafe-inline'`.
 
+> [!NOTE]
+> This package is for .NET 11 or later. If your app targets .NET 10, use [Toolbelt.Blazor.WebAssembly.ExtensibleDevServer.ImportMapExtension](https://www.nuget.org/packages/Toolbelt.Blazor.WebAssembly.ExtensibleDevServer.ImportMapExtension/) instead.
+
 ## ⚠️ The problems
 
 Both problems below live in `wwwroot/index.html` of a standalone Blazor WebAssembly project, once you
