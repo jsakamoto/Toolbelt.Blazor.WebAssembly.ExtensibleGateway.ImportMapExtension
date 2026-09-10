@@ -27,7 +27,7 @@ internal sealed class SolutionContainer : IAsyncDisposable
     /// maps, and it needs the .NET 11 SDK, because that is what the gateway this extension plugs
     /// into ships with.
     /// </summary>
-    private const string SdkImage = "mcr.microsoft.com/dotnet/sdk:11.0-preview";
+    private const string SdkImage = "mcr.microsoft.com/dotnet/sdk:11.0";
 
     /// <summary>Where the copy of the solution that gets built lives inside the container.</summary>
     public const string SolutionDir = "/work";
@@ -40,8 +40,12 @@ internal sealed class SolutionContainer : IAsyncDisposable
     /// <summary>Where the working tree is mounted, read only, for the copy above to be made from.</summary>
     private const string SourceDir = "/src";
 
-    /// <summary>Folder names that hold nothing a build reads, wherever in the tree they turn up.</summary>
-    private static readonly string[] NotWorthCopying = ["bin", "obj", ".vs", ".git", "TestResults"];
+    /// <summary>
+    /// Folder names that hold nothing a build reads, wherever in the tree they turn up. The folder
+    /// that locally built packages are dropped into is one of them, because everything in it has
+    /// already been copied into "_dist" by the time a container starts.
+    /// </summary>
+    private static readonly string[] NotWorthCopying = ["bin", "obj", ".vs", ".git", "TestResults", LocalPackages.FolderName];
 
     /// <summary>Where that copy is staged. It is deleted as soon as it has been unpacked.</summary>
     private const string ArchivePath = "/tmp/solution.tar";
