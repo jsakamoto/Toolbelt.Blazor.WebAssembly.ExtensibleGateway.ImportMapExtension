@@ -16,13 +16,11 @@ Say so explicitly in the release notes (see below).
 
 1. Confirm the new `Toolbelt.Blazor.WebAssembly.ExtensibleGateway` version (from the `NET11/Gateway`
    repository's own version bump — see its `follow-upstream-release` skill; that repository should be
-   updated, packed, and tested first). Use its short release-train label (e.g. `11.0.0-rc.1`), not the
-   full build-numbered string.
+   updated, packed, and tested first), i.e. its `ExtensibleGatewayVersion` (e.g. `11.0.1`).
 2. Update `VersionInfo.props`: bump both `ExtensibleGatewayVersion` and `ImportMapExtensionVersion`
-   to that same label, even though only `ExtensibleGatewayVersion` strictly needs to move.
+   to that same version, even though only `ExtensibleGatewayVersion` strictly needs to move.
 3. Update `SampleApp/SampleApp.csproj`'s `Microsoft.AspNetCore.Components.WebAssembly`
-   `PackageReference`, which uses a floating wildcard like `11.0.0-rc.1.*` — bump the release-train
-   label prefix to match. (The `Toolbelt.Blazor.WebAssembly.ExtensibleGateway` and
+   `PackageReference` to that same exact version. (The `Toolbelt.Blazor.WebAssembly.ExtensibleGateway` and
    `Toolbelt.Blazor.WebAssembly.ExtensibleGateway.ImportMapExtension` references already pull from
    the `VersionInfo.props` properties, so they update automatically.)
 4. Add a new entry at the top of `RELEASE-NOTES.txt` (see the `release-notes` skill for the house
@@ -60,8 +58,9 @@ Say so explicitly in the release notes (see below).
 ## Gotchas
 
 - `ImportMapExtension.Test/Internals/SolutionContainer.cs`'s `SdkImage` constant uses the
-  **floating** `mcr.microsoft.com/dotnet/sdk:11.0` tag (tracks whatever prerelease build MCR
-  currently publishes for .NET 11). If a test fails with "You must install or update .NET to run
+  **floating** `mcr.microsoft.com/dotnet/sdk:11.0` tag (tracks the newest .NET 11 SDK MCR
+  publishes), kept deliberately after .NET 11 GA, so don't pin it. The `docker pull` step in
+  `.github/workflows/tests.yml` uses the same tag. If a test fails with "You must install or update .NET to run
   this application," the fix is usually `docker pull mcr.microsoft.com/dotnet/sdk:11.0` to refresh
   the cached image, not editing the tag.
 - Files in this repository are stored as LF line endings in git; a normal checkout converts them to
