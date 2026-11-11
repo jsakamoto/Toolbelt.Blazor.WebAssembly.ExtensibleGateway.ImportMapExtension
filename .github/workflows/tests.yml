@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 11.0.x
-          dotnet-quality: preview
 
       # Add an additional NuGet package source (configured via the "ADDITIONAL_NUGET_SOURCE_URL" repository
       # variable and the "ADDITIONAL_NUGET_SOURCE_TOKEN" repository secret; skipped if either one is not set)
@@ -46,7 +45,7 @@ jobs:
       # what keeps them out of the NuGet cache of the machine they run on. Pulling the image here
       # rather than letting the first of them wait for it keeps the reason for a slow start visible.
       - name: Pull the .NET SDK image the tests build in
-        run: docker pull mcr.microsoft.com/dotnet/sdk:11.0-preview
+        run: docker pull mcr.microsoft.com/dotnet/sdk:11.0
 
       - name: Perform tests
         run: dotnet test --project ./ImportMapExtension.Test/ImportMapExtension.Test.csproj --output detailed
